@@ -51,6 +51,8 @@ export default {
       });
     });
 
+    this.instance.on('loading', (e) => this.$emit('loading'));
+    this.instance.on('ready', (e) => this.$emit('loaded'));
     this.instance.load(this.source);
   }
 };
