@@ -45,6 +45,7 @@ export default {
 
 <style scoped>
 #wavesurfer {
+  height: 256px;
   position: relative;
 }
 
