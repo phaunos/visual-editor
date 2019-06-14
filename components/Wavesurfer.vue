@@ -1,14 +1,18 @@
 <template>
-   <div id="wavesurfer" class="container">
-    <div id="waveform" />
-    <div id="spectrogram" />
+  <div>
+    <div id="wavesurfer" class="container">
+      <div id="waveform"/>
+      <div id="spectrogram"/>
+    </div>
+    <div id="timeline"/>
   </div>
 </template>
 
 <script>
-import WaveSurfer from 'wavesurfer.js'
-import Spectrogram from 'wavesurfer.js/dist/plugin/wavesurfer.spectrogram'
-import Regions from 'wavesurfer.js/dist/plugin/wavesurfer.regions'
+import WaveSurfer from "wavesurfer.js";
+import Spectrogram from "wavesurfer.js/dist/plugin/wavesurfer.spectrogram";
+import Timeline from "wavesurfer.js/dist/plugin/wavesurfer.timeline";
+import Regions from "wavesurfer.js/dist/plugin/wavesurfer.regions";
 
 export default {
   props: {
@@ -21,26 +25,35 @@ export default {
   data() {
     return {
       instance: null
-    }
+    };
   },
 
   mounted() {
     this.instance = WaveSurfer.create({
       container: "#waveform",
-      waveColor: 'violet',
-      progressColor: 'purple',
+      pixelRatio: 1,
       height: 256,
       plugins: [
         Spectrogram.create({
-          container: '#spectrogram',
+          container: "#spectrogram",
           labels: true
-        })
+        }),
+        Timeline.create({
+          container: "#timeline"
+        }),
+        Regions.create({})
       ]
-    })
+    });
 
-    this.instance.load(this.source)
+    this.instance.on("ready", () => {
+      this.instance.enableDragSelection({
+        color: "rgba(74, 74, 74, 0.31)"
+      });
+    });
+
+    this.instance.load(this.source);
   }
-}
+};
 </script>
 
 <style scoped>
@@ -49,7 +62,8 @@ export default {
   position: relative;
 }
 
-#waveform, #spectrogram {
+#waveform,
+#spectrogram {
   position: absolute;
   top: 0;
   width: 100%;
