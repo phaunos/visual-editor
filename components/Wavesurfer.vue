@@ -19,6 +19,11 @@ export default {
     source: {
       type: String,
       default: null
+    },
+
+    hasRegions: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -29,31 +34,77 @@ export default {
   },
 
   mounted() {
+    const plugins = [
+      Spectrogram.create({
+        container: "#spectrogram",
+        labels: true
+      }),
+      Timeline.create({
+        container: "#timeline"
+      })
+    ];
+
+    if (this.hasRegions) {
+      plugins.push(Regions.create({}));
+    }
+
     this.instance = WaveSurfer.create({
       container: "#waveform",
       pixelRatio: 1,
       height: 256,
-      plugins: [
-        Spectrogram.create({
-          container: "#spectrogram",
-          labels: true
-        }),
-        Timeline.create({
-          container: "#timeline"
-        }),
-        Regions.create({})
-      ]
+      plugins: plugins
     });
 
-    this.instance.on("ready", () => {
-      this.instance.enableDragSelection({
-        color: "rgba(74, 74, 74, 0.31)"
+    if (this.hasRegions) {
+      this.instance.on("ready", () => {
+        this.instance.enableDragSelection({
+          color: "rgba(74, 74, 74, 0.31)"
+        });
       });
-    });
 
-    this.instance.on('loading', (e) => this.$emit('loading'));
-    this.instance.on('ready', (e) => this.$emit('loaded'));
+      this.instance.on("region-created", e => {
+        this.onRegionCreated(e);
+        this.$emit("regionCreated", e);
+      });
+
+      this.instance.on("region-click", e => this.$emit("regionClick", e));
+      this.instance.on("region-updated", e => this.$emit("regionUpdated", e));
+      this.instance.on("region-removed", e => this.$emit("regionRemoved", e));
+    }
+
+    this.instance.on("loading", e => this.$emit("loading"));
+    this.instance.on("ready", e => this.$emit("loaded"));
     this.instance.load(this.source);
+  },
+
+  methods: {
+    onRegionCreated(region) {
+      const close = document.createElement("div");
+
+      close.addEventListener("click", (e) => {
+        e.preventDefault();
+        region.remove();
+      });
+
+      close.classList.add("region-close");
+      close.style.border = "1px solid red";
+      close.style.borderRadius = "50%";
+      close.style.width = "10px";
+      close.style.background = "red";
+      close.style.height = "10px";
+      close.style.position = "absolute";
+      close.style.right = 0;
+      close.style.margin = "5px";
+      close.style.zIndex = 100;
+
+      region.element.appendChild(close);
+
+      const title = document.createElement("div");
+
+      title.classList.add("region-title");
+
+      region.element.appendChild(title);
+    }
   }
 };
 </script>
@@ -77,5 +128,13 @@ export default {
 
 #waveform >>> canvas {
   display: none;
+}
+
+#waveform >>> .region-title {
+  margin: 0 auto;
+  height: 100%;
+  color: #fff;
+  writing-mode: vertical-rl;
+  text-align: center;
 }
 </style>
