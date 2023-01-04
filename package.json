@@ -13,7 +13,7 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
-    "nuxt": "^2.0.0",
+    "nuxt": "^2.15.8",
     "wavesurfer.js": "^2.2.1"
   },
   "devDependencies": {
